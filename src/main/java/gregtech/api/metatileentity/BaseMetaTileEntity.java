@@ -15,6 +15,9 @@ import java.util.UUID;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
+import mcp.mobius.waila.api.ProbeMode;
+import mcp.mobius.waila.api.elements.IProbeDataProvider;
+import mcp.mobius.waila.api.elements.IProbeInfo;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockFire;
 import net.minecraft.entity.Entity;
@@ -96,7 +99,7 @@ import mcp.mobius.waila.api.IWailaDataAccessor;
  */
 public class BaseMetaTileEntity extends CommonMetaTileEntity
     implements IGregTechTileEntity, IActionHost, IGridProxyable, IAlignmentProvider, IConstructableProvider,
-    IDebugableTileEntity, IGregtechWailaProvider, ICleanroomReceiver, ICustomNameObject {
+    IDebugableTileEntity, IGregtechWailaProvider, ICleanroomReceiver, ICustomNameObject, IProbeDataProvider {
 
     private static final Field ENTITY_ITEM_HEALTH_FIELD = ReflectionHelper
         .findField(EntityItem.class, "health", "field_70291_e");
@@ -667,6 +670,21 @@ public class BaseMetaTileEntity extends CommonMetaTileEntity
         if (hasValidMetaTileEntity()) {
             getMetaTileEntity().getWailaNBTData(player, tile, tag, world, x, y, z);
         }
+    }
+
+    @Override
+    public void addProbeInfo(ProbeMode probeMode, ItemStack itemStack, IProbeInfo iProbeInfo, IWailaDataAccessor accessor, IWailaConfigHandler config) {
+        if (hasValidMetaTileEntity()) {
+            getMetaTileEntity().addProbeInfo(probeMode, itemStack, iProbeInfo, accessor, config);
+        }
+    }
+
+    @Override
+    public NBTTagCompound getNBTData(EntityPlayerMP player, TileEntity te, NBTTagCompound tag, World world, int x, int y, int z) {
+        if (hasValidMetaTileEntity()) {
+            getMetaTileEntity().getNBTData(player, te, tag, world, x, y, z);
+        }
+        return tag;
     }
 
     private void sendClientData() {

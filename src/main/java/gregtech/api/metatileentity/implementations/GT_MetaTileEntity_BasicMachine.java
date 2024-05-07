@@ -21,16 +21,25 @@ import static net.minecraftforge.common.util.ForgeDirection.DOWN;
 import static net.minecraftforge.common.util.ForgeDirection.UNKNOWN;
 import static net.minecraftforge.common.util.ForgeDirection.UP;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
 import javax.annotation.Nonnull;
 
+import gregtech.api.metatileentity.BaseMetaTileEntity;
+import mcp.mobius.waila.api.*;
+import mcp.mobius.waila.api.elements.IProbeInfo;
+import mcp.mobius.waila.api.impl.elements.ElementProgress;
+import mcp.mobius.waila.api.impl.elements.ItemStyle;
+import mcp.mobius.waila.api.impl.elements.LayoutStyle;
+import mcp.mobius.waila.api.impl.elements.ProgressStyle;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.nbt.NBTTagList;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.EnumChatFormatting;
 import net.minecraft.util.StatCollector;
@@ -86,8 +95,6 @@ import gregtech.api.util.GT_TooltipDataCache;
 import gregtech.api.util.GT_Utility;
 import gregtech.api.util.GT_Waila;
 import gregtech.common.gui.modularui.UIHelper;
-import mcp.mobius.waila.api.IWailaConfigHandler;
-import mcp.mobius.waila.api.IWailaDataAccessor;
 
 /**
  * NEVER INCLUDE THIS FILE IN YOUR MOD!!!
@@ -1258,6 +1265,122 @@ public abstract class GT_MetaTileEntity_BasicMachine extends GT_MetaTileEntity_B
                     .ordinal());
             if (tileEntity.isActive()) tag.setInteger("eut", mEUt);
         }
+    }
+
+    @Override
+    public void addProbeInfo(ProbeMode probeMode, ItemStack itemStack, IProbeInfo probeInfo, IWailaDataAccessor accessor, IWailaConfigHandler config) {
+        final NBTTagCompound tag = accessor.getNBTData();
+
+        int maxStorage = tag.getInteger("StoredCapacity");
+        if (maxStorage != 0) { // do not add empty max storage progress bar
+            probeInfo.progress(tag.getInteger("Stored"), maxStorage, new ProgressStyle()
+                .suffix(" / " + ElementProgress.format(maxStorage, NumberFormat.COMMAS, " EU"))
+                .filledColor(0xFFEEE600)
+                .alternateFilledColor(0xFFEEE600)
+                .borderColor(0xFF555555).numberFormat(NumberFormat.COMMAS));
+        }
+
+        if (tag.getBoolean("stutteringSingleBlock")) {
+            probeInfo.text("Status: insufficient energy");
+        } else {
+            boolean isActive = tag.getBoolean("isActiveSingleBlock");
+            if (isActive) {
+                int mEUt = tag.getInteger("eut");
+                if (!isSteampowered()) {
+                    if (mEUt > 0) {
+                        probeInfo.text(
+                            StatCollector.translateToLocalFormatted(
+                                "GT5U.waila.energy.use_with_amperage",
+                                GT_Utility.formatNumbers(mEUt),
+                                GT_Utility.getAmperageForTier(mEUt, (byte) getInputTier()),
+                                GT_Utility.getColoredTierNameFromTier((byte) getInputTier())));
+                    } else if (mEUt < 0) {
+                        probeInfo.text(
+                            StatCollector.translateToLocalFormatted(
+                                "GT5U.waila.energy.produce_with_amperage",
+                                GT_Utility.formatNumbers(-mEUt),
+                                GT_Utility.getAmperageForTier(-mEUt, (byte) getOutputTier()),
+                                GT_Utility.getColoredTierNameFromTier((byte) getOutputTier())));
+                    }
+                } else {
+                    if (mEUt > 0) {
+                        probeInfo.text(
+                            StatCollector.translateToLocalFormatted(
+                                "GT5U.waila.energy.use",
+                                GT_Utility.formatNumbers(mEUt),
+                                GT_Utility.getColoredTierNameFromVoltage(mEUt)));
+                    } else if (mEUt < 0) {
+                        probeInfo.text(
+                            StatCollector.translateToLocalFormatted(
+                                "GT5U.waila.energy.produce",
+                                GT_Utility.formatNumbers(-mEUt),
+                                GT_Utility.getColoredTierNameFromVoltage(-mEUt)));
+                    }
+                }
+            }
+            int progress = tag.getInteger("progressSingleBlock");
+            int maxProgress = tag.getInteger("maxProgressSingleBlock");
+            if(progress != 0) {
+                probeInfo.horizontal().progress(progress, maxProgress, new ProgressStyle()
+                    .suffix(" /" + maxProgress + " t (" + GT_Utility.formatNumbers((Math.round((double) progress / maxProgress * 1000) / 10.0)) + "%)")
+                    .filledColor(0xFF4CBB17)
+                    .alternateFilledColor(0xFF4CBB17)
+                    .borderColor(0xFF555555)
+                    .numberFormat(NumberFormat.COMMAS));
+            }
+
+            if(probeMode == ProbeMode.EXTENDED) {
+                List<ItemStack> items = new ArrayList<>();
+                NBTTagList itemsTag = (NBTTagList) tag.getTag("Items");
+                if(itemsTag != null) {
+                    for (int i = 0; i < itemsTag.tagCount(); i++) {
+                        NBTTagCompound itemTag = itemsTag.getCompoundTagAt(i);
+
+                        items.add(ItemStack.loadItemStackFromNBT(itemTag));
+                    }
+                }
+
+                if(!items.isEmpty()) {
+                    IProbeInfo itemProbes = probeInfo.horizontal(new LayoutStyle().borderColor(0xff787878));
+                    for (ItemStack outputItem : items) {
+                        itemProbes.item(outputItem, new ItemStyle(12, 12));
+                    }
+                }
+            }
+        }
+
+        if(probeMode == ProbeMode.EXTENDED) {
+            probeInfo.vertical(new LayoutStyle().borderColor(0xff00ffff))
+                .text(
+                    String.format(
+                        "Machine Facing:" + SpecialChars.BLUE + " %s",
+                        ForgeDirection.getOrientation(tag.getInteger("mainFacingSingleBlock"))
+                            .name()))
+                .text(
+                    String.format(
+                        "Output Facing:" + SpecialChars.BLUE + " %s",
+                        ForgeDirection.getOrientation(tag.getInteger("outputFacingSingleBlock"))
+                            .name()));
+        }
+    }
+
+    @Override
+    public NBTTagCompound getNBTData(EntityPlayerMP player, TileEntity te, NBTTagCompound tag, World world, int x, int y, int z) {
+        getWailaNBTData(player, te, tag, world, x, y, z);
+        NBTTagList itemsTag = new NBTTagList();
+        for (ItemStack mItem : mInventory) {
+            if(mItem != null) {
+                NBTTagCompound itemTag = new NBTTagCompound();
+                mItem.writeToNBT(itemTag);
+                itemsTag.appendTag(itemTag);
+            }
+        }
+        tag.setTag("Items", itemsTag);
+
+        tag.setInteger("Stored", ((BaseMetaTileEntity)te).getStored());
+        tag.setLong("StoredCapacity", ((BaseMetaTileEntity)te).getCapacity());
+
+        return tag;
     }
 
     @Nonnull

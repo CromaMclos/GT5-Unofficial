@@ -14,6 +14,7 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.function.Predicate;
 
+import gregtech.crossmod.waila.Waila2;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.init.Blocks;
 import net.minecraft.init.Items;
@@ -359,6 +360,7 @@ public class GT_Mod implements IGT_Mod {
         }
         if (Mods.Waila.isModLoaded()) {
             Waila.init();
+            Waila2.init();
         }
         if (Mods.HoloInventory.isModLoaded()) {
             HoloInventory.init();
