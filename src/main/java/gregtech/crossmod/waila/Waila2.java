@@ -3,7 +3,6 @@ package gregtech.crossmod.waila;
 import cpw.mods.fml.common.event.FMLInterModComms;
 import gregtech.api.enums.Mods;
 import gregtech.api.metatileentity.BaseMetaTileEntity;
-import gregtech.api.metatileentity.implementations.GT_MetaTileEntity_BasicMachine;
 import mcp.mobius.waila.api.elements.IProbeDataProvider;
 import mcp.mobius.waila.api.elements.IProbeRegistrar;
 
