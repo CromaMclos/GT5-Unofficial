@@ -17,6 +17,7 @@ import static gregtech.api.metatileentity.BaseTileEntity.UNUSED_SLOT_TOOLTIP;
 import static gregtech.api.util.GT_RecipeConstants.EXPLODE;
 import static gregtech.api.util.GT_RecipeConstants.ON_FIRE;
 import static gregtech.api.util.GT_Utility.moveMultipleItemStacks;
+import static gregtech.api.util.GT_Waila.*;
 import static net.minecraftforge.common.util.ForgeDirection.DOWN;
 import static net.minecraftforge.common.util.ForgeDirection.UNKNOWN;
 import static net.minecraftforge.common.util.ForgeDirection.UP;
@@ -28,15 +29,6 @@ import java.util.List;
 
 import javax.annotation.Nonnull;
 
-import gregtech.api.metatileentity.BaseMetaTileEntity;
-import mcp.mobius.waila.api.*;
-import mcp.mobius.waila.api.elements.IProbeInfo;
-import mcp.mobius.waila.api.impl.ConfigHandler;
-import mcp.mobius.waila.api.impl.elements.ElementProgress;
-import mcp.mobius.waila.api.impl.elements.ItemStyle;
-import mcp.mobius.waila.api.impl.elements.LayoutStyle;
-import mcp.mobius.waila.api.impl.elements.ProgressStyle;
-import mcp.mobius.waila.utils.Constants;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.item.ItemStack;
@@ -47,7 +39,6 @@ import net.minecraft.util.EnumChatFormatting;
 import net.minecraft.util.StatCollector;
 import net.minecraft.world.World;
 import net.minecraftforge.common.DimensionManager;
-import net.minecraftforge.common.config.Configuration;
 import net.minecraftforge.common.util.ForgeDirection;
 import net.minecraftforge.fluids.FluidStack;
 import net.minecraftforge.fluids.IFluidHandler;
@@ -82,6 +73,7 @@ import gregtech.api.interfaces.modularui.IAddUIWidgets;
 import gregtech.api.interfaces.tileentity.IGregTechTileEntity;
 import gregtech.api.interfaces.tileentity.IOverclockDescriptionProvider;
 import gregtech.api.interfaces.tileentity.RecipeMapWorkable;
+import gregtech.api.metatileentity.BaseMetaTileEntity;
 import gregtech.api.objects.GT_ItemStack;
 import gregtech.api.objects.overclockdescriber.EUOverclockDescriber;
 import gregtech.api.objects.overclockdescriber.OverclockDescriber;
@@ -98,6 +90,10 @@ import gregtech.api.util.GT_TooltipDataCache;
 import gregtech.api.util.GT_Utility;
 import gregtech.api.util.GT_Waila;
 import gregtech.common.gui.modularui.UIHelper;
+import mcp.mobius.waila.api.*;
+import mcp.mobius.waila.api.elements.IProbeInfo;
+import mcp.mobius.waila.api.impl.elements.ItemStyle;
+import mcp.mobius.waila.api.impl.elements.LayoutStyle;
 
 /**
  * NEVER INCLUDE THIS FILE IN YOUR MOD!!!
@@ -1189,11 +1185,6 @@ public abstract class GT_MetaTileEntity_BasicMachine extends GT_MetaTileEntity_B
     @Override
     public void getWailaBody(ItemStack itemStack, List<String> currenttip, IWailaDataAccessor accessor,
         IWailaConfigHandler config) {
-        if(!ConfigHandler.instance()
-            .getConfig(Configuration.CATEGORY_GENERAL, Constants.CFG_WAILA_FORCE_LEGACY_MODE, false)) {
-            return;
-        }
-
         final NBTTagCompound tag = accessor.getNBTData();
 
         if (tag.getBoolean("stutteringSingleBlock")) {
@@ -1276,17 +1267,26 @@ public abstract class GT_MetaTileEntity_BasicMachine extends GT_MetaTileEntity_B
     }
 
     @Override
-    public void addProbeInfo(ProbeMode probeMode, ItemStack itemStack, IProbeInfo probeInfo, IWailaDataAccessor accessor, IWailaConfigHandler config) {
+    public void addProbeInfo(ProbeMode probeMode, ItemStack itemStack, IProbeInfo probeInfo,
+        IWailaDataAccessor accessor, IWailaConfigHandler config) {
         final NBTTagCompound tag = accessor.getNBTData();
 
+        int stored = tag.getInteger("Stored");
         int maxStorage = tag.getInteger("StoredCapacity");
         if (maxStorage != 0) { // do not add empty max storage progress bar
-            probeInfo.progress(tag.getInteger("Stored"), maxStorage, new ProgressStyle()
-                .text(ElementProgress.format(tag.getInteger("Stored"), NumberFormat.COMMAS, "")
-                    + " / " + ElementProgress.format(maxStorage, NumberFormat.COMMAS, " EU"))
-                .filledColor(0xFFEEE600)
-                .alternateFilledColor(0xFFEEE600)
-                .borderColor(0xFF555555).numberFormat(NumberFormat.COMMAS));
+            probeInfo.progress(
+                stored,
+                maxStorage,
+                probeInfo.defaultProgressStyle()
+                    .text(
+                        StatCollector.translateToLocalFormatted(
+                            "GT5U.waila.energy.stored.short",
+                            GT_Utility.formatNumbers(stored),
+                            GT_Utility.formatNumbers(maxStorage)))
+                    .filledColor(COLOR_ENERGY)
+                    .alternateFilledColor(COLOR_ENERGY)
+                    .borderColor(COLOR_PROGRESS_BORDER)
+                    .numberFormat(NumberFormat.COMMAS));
         }
 
         if (tag.getBoolean("stutteringSingleBlock")) {
@@ -1329,24 +1329,25 @@ public abstract class GT_MetaTileEntity_BasicMachine extends GT_MetaTileEntity_B
             }
             int progress = tag.getInteger("progressSingleBlock");
             int maxProgress = tag.getInteger("maxProgressSingleBlock");
-            if(maxProgress == 0) {
+            if (maxProgress == 0) {
                 maxProgress = 1;
             }
-            probeInfo.horizontal().progress(progress, maxProgress, new ProgressStyle()
-                .text(GT_Waila.getCompactMachineProgressString(
-                    isActive,
+            probeInfo.horizontal()
+                .progress(
+                    progress,
                     maxProgress,
-                    progress))
-                .filledColor(0xFF4CBB17)
-                .alternateFilledColor(0xFF4CBB17)
-                .borderColor(0xFF555555)
-                .numberFormat(NumberFormat.COMMAS));
+                    probeInfo.defaultProgressStyle()
+                        .text(GT_Waila.getCompactMachineProgressString(isActive, maxProgress, progress))
+                        .filledColor(COLOR_PROGRESS)
+                        .alternateFilledColor(COLOR_PROGRESS)
+                        .borderColor(COLOR_PROGRESS_BORDER)
+                        .numberFormat(NumberFormat.COMMAS));
         }
 
-        if(probeMode == ProbeMode.EXTENDED) {
+        if (probeMode == ProbeMode.EXTENDED) {
             List<ItemStack> items = new ArrayList<>();
             NBTTagList itemsTag = (NBTTagList) tag.getTag("Items");
-            if(itemsTag != null) {
+            if (itemsTag != null) {
                 for (int i = 0; i < itemsTag.tagCount(); i++) {
                     NBTTagCompound itemTag = itemsTag.getCompoundTagAt(i);
 
@@ -1354,16 +1355,16 @@ public abstract class GT_MetaTileEntity_BasicMachine extends GT_MetaTileEntity_B
                 }
             }
 
-            if(!items.isEmpty()) {
-                IProbeInfo itemProbes = probeInfo.horizontal(new LayoutStyle().borderColor(0xff787878));
+            if (!items.isEmpty()) {
+                IProbeInfo itemProbes = probeInfo.horizontal(new LayoutStyle().borderColor(COLOR_ITEMS_BORDER));
                 for (ItemStack outputItem : items) {
                     itemProbes.item(outputItem, new ItemStyle(12, 12));
                 }
             }
         }
 
-        if(probeMode == ProbeMode.EXTENDED) {
-            probeInfo.vertical(new LayoutStyle().borderColor(0xff00ffff))
+        if (probeMode == ProbeMode.EXTENDED) {
+            probeInfo.vertical(new LayoutStyle().borderColor(COLOR_STANDARD_GROUP_BORDER))
                 .text(
                     String.format(
                         "Machine Facing:" + SpecialChars.BLUE + " %s",
@@ -1378,10 +1379,11 @@ public abstract class GT_MetaTileEntity_BasicMachine extends GT_MetaTileEntity_B
     }
 
     @Override
-    public NBTTagCompound getNBTData(EntityPlayerMP player, TileEntity te, NBTTagCompound tag, World world, int x, int y, int z) {
+    public NBTTagCompound getNBTData(EntityPlayerMP player, TileEntity te, NBTTagCompound tag, World world, int x,
+        int y, int z) {
         NBTTagList itemsTag = new NBTTagList();
         for (ItemStack mItem : mInventory) {
-            if(mItem != null) {
+            if (mItem != null) {
                 NBTTagCompound itemTag = new NBTTagCompound();
                 mItem.writeToNBT(itemTag);
                 itemsTag.appendTag(itemTag);
@@ -1389,8 +1391,8 @@ public abstract class GT_MetaTileEntity_BasicMachine extends GT_MetaTileEntity_B
         }
         tag.setTag("Items", itemsTag);
 
-        tag.setInteger("Stored", ((BaseMetaTileEntity)te).getStored());
-        tag.setLong("StoredCapacity", ((BaseMetaTileEntity)te).getCapacity());
+        tag.setInteger("Stored", ((BaseMetaTileEntity) te).getStored());
+        tag.setLong("StoredCapacity", ((BaseMetaTileEntity) te).getCapacity());
 
         return tag;
     }

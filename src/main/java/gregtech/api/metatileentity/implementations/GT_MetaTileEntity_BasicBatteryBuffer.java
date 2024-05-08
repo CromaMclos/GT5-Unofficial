@@ -1,6 +1,7 @@
 package gregtech.api.metatileentity.implementations;
 
 import static gregtech.api.enums.GT_Values.V;
+import static gregtech.api.util.GT_Waila.*;
 
 import java.util.List;
 
@@ -31,6 +32,10 @@ import gregtech.api.util.GT_Utility;
 import ic2.api.item.IElectricItem;
 import mcp.mobius.waila.api.IWailaConfigHandler;
 import mcp.mobius.waila.api.IWailaDataAccessor;
+import mcp.mobius.waila.api.NumberFormat;
+import mcp.mobius.waila.api.ProbeMode;
+import mcp.mobius.waila.api.elements.IProbeInfo;
+import mcp.mobius.waila.api.impl.elements.LayoutStyle;
 
 /**
  * NEVER INCLUDE THIS FILE IN YOUR MOD!!!
@@ -365,6 +370,46 @@ public class GT_MetaTileEntity_BasicBatteryBuffer extends GT_MetaTileEntity_Tier
         tag.setLong("mMax", mMax);
         tag.setLong("AvgIn", getBaseMetaTileEntity().getAverageElectricInput());
         tag.setLong("AvgOut", getBaseMetaTileEntity().getAverageElectricOutput());
+    }
+
+    @Override
+    public void addProbeInfo(ProbeMode probeMode, ItemStack itemStack, IProbeInfo probeInfo,
+        IWailaDataAccessor accessor, IWailaConfigHandler config) {
+        NBTTagCompound tag = accessor.getNBTData();
+        long stored = tag.getLong("mStored");
+        long maxStorage = tag.getLong("mMax");
+        probeInfo.progress(
+            stored,
+            maxStorage,
+            probeInfo.defaultProgressStyle()
+                .width(150)
+                .text(
+                    StatCollector.translateToLocalFormatted(
+                        "GT5U.waila.energy.stored.short",
+                        GT_Utility.formatNumbers(stored),
+                        GT_Utility.formatNumbers(maxStorage)))
+                .filledColor(COLOR_ENERGY)
+                .alternateFilledColor(COLOR_ENERGY)
+                .borderColor(COLOR_PROGRESS_BORDER)
+                .numberFormat(NumberFormat.COMMAS));
+
+        long avgIn = tag.getLong("AvgIn");
+        long avgOut = tag.getLong("AvgOut");
+        IProbeInfo ioGroup = probeInfo.vertical(new LayoutStyle().borderColor(COLOR_STANDARD_GROUP_BORDER));
+        ioGroup.text(
+            StatCollector.translateToLocalFormatted(
+                "GT5U.waila.energy.avg_in_with_amperage",
+                GT_Utility.formatNumbers(avgIn),
+                GT_Utility.getAmperageForTier(avgIn, (byte) getInputTier()),
+                GT_Utility.getColoredTierNameFromTier((byte) getInputTier())));
+        ioGroup.text(
+            StatCollector.translateToLocalFormatted(
+                "GT5U.waila.energy.avg_out_with_amperage",
+                GT_Utility.formatNumbers(avgOut),
+                GT_Utility.getAmperageForTier(avgOut, (byte) getOutputTier()),
+                GT_Utility.getColoredTierNameFromTier((byte) getOutputTier())));
+
+        super.addProbeInfo(probeMode, itemStack, probeInfo, accessor, config);
     }
 
     @Override

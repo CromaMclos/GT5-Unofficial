@@ -1932,11 +1932,6 @@ public abstract class GT_MetaTileEntity_MultiBlockBase extends MetaTileEntity
         super.getWailaBody(itemStack, currentTip, accessor, config);
     }
 
-    public final void getMTEWailaBody(ItemStack itemStack, List<String> currentTip, IWailaDataAccessor accessor,
-        IWailaConfigHandler config) {
-        super.getWailaBody(itemStack, currentTip, accessor, config);
-    }
-
     @Override
     public void getWailaNBTData(EntityPlayerMP player, TileEntity tile, NBTTagCompound tag, World world, int x, int y,
         int z) {

@@ -15,9 +15,6 @@ import java.util.UUID;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
-import mcp.mobius.waila.api.ProbeMode;
-import mcp.mobius.waila.api.elements.IProbeDataProvider;
-import mcp.mobius.waila.api.elements.IProbeInfo;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockFire;
 import net.minecraft.entity.Entity;
@@ -91,6 +88,9 @@ import gregtech.common.covers.CoverInfo;
 import ic2.api.Direction;
 import mcp.mobius.waila.api.IWailaConfigHandler;
 import mcp.mobius.waila.api.IWailaDataAccessor;
+import mcp.mobius.waila.api.ProbeMode;
+import mcp.mobius.waila.api.elements.IProbeDataProvider;
+import mcp.mobius.waila.api.elements.IProbeInfo;
 
 /**
  * NEVER INCLUDE THIS FILE IN YOUR MOD!!!
@@ -673,14 +673,16 @@ public class BaseMetaTileEntity extends CommonMetaTileEntity
     }
 
     @Override
-    public void addProbeInfo(ProbeMode probeMode, ItemStack itemStack, IProbeInfo iProbeInfo, IWailaDataAccessor accessor, IWailaConfigHandler config) {
+    public void addProbeInfo(ProbeMode probeMode, ItemStack itemStack, IProbeInfo iProbeInfo,
+        IWailaDataAccessor accessor, IWailaConfigHandler config) {
         if (hasValidMetaTileEntity()) {
             getMetaTileEntity().addProbeInfo(probeMode, itemStack, iProbeInfo, accessor, config);
         }
     }
 
     @Override
-    public NBTTagCompound getNBTData(EntityPlayerMP player, TileEntity te, NBTTagCompound tag, World world, int x, int y, int z) {
+    public NBTTagCompound getNBTData(EntityPlayerMP player, TileEntity te, NBTTagCompound tag, World world, int x,
+        int y, int z) {
         if (hasValidMetaTileEntity()) {
             getMetaTileEntity().getNBTData(player, te, tag, world, x, y, z);
         }

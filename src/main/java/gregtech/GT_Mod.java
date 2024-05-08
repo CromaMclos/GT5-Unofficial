@@ -14,7 +14,6 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.function.Predicate;
 
-import gregtech.crossmod.waila.Waila2;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.init.Blocks;
 import net.minecraft.init.Items;
@@ -90,6 +89,7 @@ import gregtech.common.tileentities.machines.GT_MetaTileEntity_Hatch_CraftingInp
 import gregtech.common.tileentities.storage.GT_MetaTileEntity_DigitalChestBase;
 import gregtech.crossmod.holoinventory.HoloInventory;
 import gregtech.crossmod.waila.Waila;
+import gregtech.crossmod.waila.Waila2;
 import gregtech.loaders.load.GT_CoverBehaviorLoader;
 import gregtech.loaders.load.GT_FuelLoader;
 import gregtech.loaders.load.GT_ItemIterator;

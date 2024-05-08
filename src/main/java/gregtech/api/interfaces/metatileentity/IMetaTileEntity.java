@@ -6,7 +6,6 @@ import java.util.List;
 
 import javax.annotation.Nullable;
 
-import mcp.mobius.waila.api.elements.IProbeDataProvider;
 import net.minecraft.block.Block;
 import net.minecraft.client.renderer.RenderBlocks;
 import net.minecraft.client.renderer.texture.IIconRegister;
@@ -39,6 +38,7 @@ import gregtech.api.interfaces.tileentity.IMachineBlockUpdateable;
 import gregtech.api.objects.GT_ItemStack;
 import gregtech.api.util.GT_Config;
 import gregtech.api.util.GT_Util;
+import mcp.mobius.waila.api.elements.IProbeDataProvider;
 
 /**
  * Warning, this Interface has just been made to be able to add multiple kinds of MetaTileEntities (Cables, Pipes,

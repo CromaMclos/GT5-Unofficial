@@ -7,11 +7,14 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.world.World;
+import net.minecraftforge.common.config.Configuration;
 
 import gregtech.api.interfaces.tileentity.IGregtechWailaProvider;
 import mcp.mobius.waila.api.IWailaConfigHandler;
 import mcp.mobius.waila.api.IWailaDataAccessor;
 import mcp.mobius.waila.api.IWailaDataProvider;
+import mcp.mobius.waila.api.impl.ConfigHandler;
+import mcp.mobius.waila.utils.Constants;
 
 public class GregtechWailaDataProvider implements IWailaDataProvider {
 
@@ -29,6 +32,11 @@ public class GregtechWailaDataProvider implements IWailaDataProvider {
     @Override
     public List<String> getWailaBody(ItemStack itemStack, List<String> currenttip, IWailaDataAccessor accessor,
         IWailaConfigHandler config) {
+        if (!ConfigHandler.instance()
+            .getConfig(Configuration.CATEGORY_GENERAL, Constants.CFG_WAILA_FORCE_LEGACY_MODE, false)) {
+            return currenttip;
+        }
+
         final TileEntity tile = accessor.getTileEntity();
         if (tile instanceof IGregtechWailaProvider) {
             ((IGregtechWailaProvider) tile).getWailaBody(itemStack, currenttip, accessor, config);

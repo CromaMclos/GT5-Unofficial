@@ -48,6 +48,8 @@ import gregtech.api.util.GT_Utility;
 import gregtech.common.covers.CoverInfo;
 import mcp.mobius.waila.api.IWailaConfigHandler;
 import mcp.mobius.waila.api.IWailaDataAccessor;
+import mcp.mobius.waila.api.ProbeMode;
+import mcp.mobius.waila.api.elements.IProbeInfo;
 
 /**
  * NEVER INCLUDE THIS FILE IN YOUR MOD!!!
@@ -1412,5 +1414,12 @@ public class BaseMetaPipeEntity extends CommonMetaTileEntity
         IWailaConfigHandler config) {
         super.getWailaBody(itemStack, currentTip, accessor, config);
         mMetaTileEntity.getWailaBody(itemStack, currentTip, accessor, config);
+    }
+
+    @Override
+    public void addProbeInfo(ProbeMode probeMode, ItemStack itemStack, IProbeInfo probeInfo,
+        IWailaDataAccessor accessor, IWailaConfigHandler config) {
+        super.addProbeInfo(probeMode, itemStack, probeInfo, accessor, config);
+        mMetaTileEntity.addProbeInfo(probeMode, itemStack, probeInfo, accessor, config);
     }
 }

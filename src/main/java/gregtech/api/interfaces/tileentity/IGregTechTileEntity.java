@@ -23,6 +23,7 @@ import gregtech.api.interfaces.modularui.IAddInventorySlots;
 import gregtech.api.interfaces.modularui.IGetGUITextureSet;
 import gregtech.api.util.shutdown.ShutDownReason;
 import gregtech.common.blocks.GT_Block_Machines;
+import mcp.mobius.waila.api.elements.IProbeDataProvider;
 
 /**
  * A simple compound Interface for all my TileEntities.
@@ -33,7 +34,7 @@ import gregtech.common.blocks.GT_Block_Machines;
  */
 public interface IGregTechTileEntity extends ITexturedTileEntity, IGearEnergyTileEntity, ICoverable, IFluidHandler,
     ITurnable, IGregTechDeviceInformation, IUpgradableMachine, IDigitalChest, IDescribable, IMachineBlockUpdateable,
-    IGregtechWailaProvider, IGetGUITextureSet, IAddInventorySlots {
+    IGregtechWailaProvider, IGetGUITextureSet, IAddInventorySlots, IProbeDataProvider {
 
     /**
      * gets the Error displayed on the GUI
