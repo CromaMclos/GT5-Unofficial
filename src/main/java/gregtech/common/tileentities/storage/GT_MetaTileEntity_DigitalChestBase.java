@@ -3,8 +3,8 @@ package gregtech.common.tileentities.storage;
 import static gregtech.api.enums.Textures.BlockIcons.MACHINE_CASINGS;
 import static gregtech.api.enums.Textures.BlockIcons.OVERLAY_SCHEST;
 import static gregtech.api.enums.Textures.BlockIcons.OVERLAY_SCHEST_GLOW;
-import static gregtech.api.util.GT_Waila.COLOR_ITEMS_BORDER;
-import static gregtech.api.util.GT_Waila.COLOR_STANDARD_GROUP_BORDER;
+import static gregtech.api.util.GT_Waila.*;
+import static gregtech.api.util.GT_Waila.COLOR_PROGRESS_BORDER;
 
 import java.util.HashMap;
 import java.util.List;
@@ -538,9 +538,16 @@ public abstract class GT_MetaTileEntity_DigitalChestBase extends GT_MetaTileEnti
             if(content != null) {
                 content.stackSize = 1; //TODO: compressed stack size rendering cf:1,200 items -> 1.2k items
                 probeInfo
-                    .horizontal(probeInfo.defaultLayoutStyle().borderColor(COLOR_ITEMS_BORDER))
+                    .horizontal()
                     .item(content, probeInfo.defaultItemStyle().height(12).width(12))
-                    .text(content.getDisplayName() + ": " + ElementProgress.format(contentCount, NumberFormat.COMPACT, ""), probeInfo.defaultTextStyle().vPadding(2).leftPadding(4));
+                    .progress(contentCount, getMaxItemCount(),
+                        probeInfo.defaultProgressStyle().text(
+                                content.getDisplayName() + ": " + ElementProgress.format(contentCount, NumberFormat.COMPACT, "")
+                            )
+                            .height(12)
+                            .filledColor(COLOR_PROGRESS)
+                            .alternateFilledColor(COLOR_PROGRESS_BORDER)
+                            .borderColor(COLOR_PROGRESS_BORDER));
             }
         } else {
             probeInfo.text("Chest Empty");

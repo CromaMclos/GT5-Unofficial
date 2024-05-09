@@ -6,11 +6,19 @@ import static gregtech.api.enums.Textures.BlockIcons.OVERLAY_QTANK;
 import static gregtech.api.enums.Textures.BlockIcons.OVERLAY_QTANK_GLOW;
 import static gregtech.api.metatileentity.BaseTileEntity.TOOLTIP_DELAY;
 import static gregtech.api.util.GT_Utility.formatNumbers;
+import static gregtech.api.util.GT_Waila.COLOR_PROGRESS;
+import static gregtech.api.util.GT_Waila.COLOR_PROGRESS_BORDER;
 
 import java.util.List;
 
 import javax.annotation.Nonnull;
 
+import gregtech.api.enums.ItemList;
+import mcp.mobius.waila.api.NumberFormat;
+import mcp.mobius.waila.api.ProbeMode;
+import mcp.mobius.waila.api.elements.IProbeInfo;
+import mcp.mobius.waila.api.impl.elements.ElementProgress;
+import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.item.ItemStack;
@@ -20,11 +28,7 @@ import net.minecraft.util.EnumChatFormatting;
 import net.minecraft.util.StatCollector;
 import net.minecraft.world.World;
 import net.minecraftforge.common.util.ForgeDirection;
-import net.minecraftforge.fluids.Fluid;
-import net.minecraftforge.fluids.FluidRegistry;
-import net.minecraftforge.fluids.FluidStack;
-import net.minecraftforge.fluids.FluidTankInfo;
-import net.minecraftforge.fluids.IFluidHandler;
+import net.minecraftforge.fluids.*;
 
 import com.gtnewhorizons.modularui.api.NumberFormatMUI;
 import com.gtnewhorizons.modularui.api.math.Alignment;
@@ -537,6 +541,40 @@ public abstract class GT_MetaTileEntity_DigitalTankBase extends GT_MetaTileEntit
         FluidStack fluid = getFluid();
         if (fluid != null) tag.setTag("mFluid", fluid.writeToNBT(new NBTTagCompound()));
         else if (tag.hasKey("mFluid")) tag.removeTag("mFluid");
+    }
+
+    @Override
+    public void addProbeInfo(ProbeMode probeMode, ItemStack itemStack, IProbeInfo probeInfo,
+                             IWailaDataAccessor accessor, IWailaConfigHandler config) {
+        super.addProbeInfo(probeMode, itemStack, probeInfo, accessor, config);
+
+        NBTTagCompound tag = accessor.getNBTData();
+        FluidStack fluid = tag.hasKey("mFluid") ? FluidStack.loadFluidStackFromNBT(tag.getCompoundTag("mFluid")) : null;
+        ItemStack fluidCell = FluidContainerRegistry.fillFluidContainer(fluid, ItemList.Cell_Empty.get(1L));
+        if (fluid != null && fluid.amount >= 0) {
+            int color = COLOR_PROGRESS;
+            if (fluid.getFluid().getIcon() instanceof TextureAtlasSprite) {
+                TextureAtlasSprite sprite = (TextureAtlasSprite) fluid.getFluid().getIcon();
+                color = sprite.getFrameTextureData(0)[0][sprite.getIconWidth() / 2 + sprite.getIconHeight() / 2 * sprite.getIconWidth()];
+            }
+            IProbeInfo tank = probeInfo.horizontal();
+            if(fluidCell != null) {
+                tank.item(fluidCell, probeInfo.defaultItemStyle().width(24).height(24));
+            }
+            tank.vertical().progress(fluid.amount,
+                getRealCapacity(),
+                probeInfo.defaultProgressStyle().text(
+                        ElementProgress.format(fluid.amount, NumberFormat.COMPACT, "") + " / "
+                        + ElementProgress.format(getRealCapacity(), NumberFormat.COMPACT, " L "))
+                    .filledColor(color)
+                    .alternateFilledColor(COLOR_PROGRESS_BORDER)
+                    .borderColor(COLOR_PROGRESS_BORDER)
+                    .width(150).height(12)
+                )
+                .text(fluid.getLocalizedName(), probeInfo.defaultTextStyle().height(12));
+        } else {
+            probeInfo.text("Tank Empty");
+        }
     }
 
     @Override
