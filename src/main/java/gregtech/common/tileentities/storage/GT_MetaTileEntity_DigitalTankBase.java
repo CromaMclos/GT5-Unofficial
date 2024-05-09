@@ -6,7 +6,6 @@ import static gregtech.api.enums.Textures.BlockIcons.OVERLAY_QTANK;
 import static gregtech.api.enums.Textures.BlockIcons.OVERLAY_QTANK_GLOW;
 import static gregtech.api.metatileentity.BaseTileEntity.TOOLTIP_DELAY;
 import static gregtech.api.util.GT_Utility.formatNumbers;
-import static gregtech.api.util.GT_Waila.COLOR_PROGRESS;
 import static gregtech.api.util.GT_Waila.COLOR_PROGRESS_BORDER;
 
 import java.util.List;
@@ -36,6 +35,7 @@ import com.gtnewhorizons.modularui.common.widget.SlotWidget;
 import com.gtnewhorizons.modularui.common.widget.TextWidget;
 
 import gregtech.api.enums.ItemList;
+import gregtech.api.enums.Materials;
 import gregtech.api.gui.modularui.GT_UIInfos;
 import gregtech.api.gui.modularui.GT_UITextures;
 import gregtech.api.interfaces.ITexture;
@@ -552,13 +552,22 @@ public abstract class GT_MetaTileEntity_DigitalTankBase extends GT_MetaTileEntit
         FluidStack fluid = tag.hasKey("mFluid") ? FluidStack.loadFluidStackFromNBT(tag.getCompoundTag("mFluid")) : null;
         ItemStack fluidCell = FluidContainerRegistry.fillFluidContainer(fluid, ItemList.Cell_Empty.get(1L));
         if (fluid != null && fluid.amount >= 0) {
-            int color = COLOR_PROGRESS;
-            if (fluid.getFluid()
-                .getIcon() instanceof TextureAtlasSprite) {
-                TextureAtlasSprite sprite = (TextureAtlasSprite) fluid.getFluid()
-                    .getIcon();
-                color = sprite.getFrameTextureData(0)[0][sprite.getIconWidth() / 2
-                    + sprite.getIconHeight() / 2 * sprite.getIconWidth()];
+            int color;
+            Materials material = Materials.getGtMaterialFromFluid(fluid.getFluid());
+            if (material != null) {
+                short[] mRGBa = material.getRGBA();
+                color = (0xFF << 24) | (mRGBa[0] << 16) | (mRGBa[1] << 8) | mRGBa[2];
+            } else {
+                color = fluid.getFluid()
+                    .getColor();
+                if (color == 0xFFFFFF && fluid.getFluid()
+                    .getIcon() instanceof TextureAtlasSprite) {
+                    // get the center color of sprite
+                    TextureAtlasSprite sprite = (TextureAtlasSprite) fluid.getFluid()
+                        .getIcon();
+                    color = sprite.getFrameTextureData(0)[0][sprite.getIconWidth() / 2
+                        + sprite.getIconHeight() / 2 * sprite.getIconWidth()];
+                }
             }
             IProbeInfo tank = probeInfo.horizontal();
             if (fluidCell != null) {
@@ -570,7 +579,7 @@ public abstract class GT_MetaTileEntity_DigitalTankBase extends GT_MetaTileEntit
             }
             tank.vertical()
                 .progress(
-                    fluid.amount,
+                    getRealCapacity() / 2,
                     getRealCapacity(),
                     probeInfo.defaultProgressStyle()
                         .text(
@@ -579,7 +588,7 @@ public abstract class GT_MetaTileEntity_DigitalTankBase extends GT_MetaTileEntit
                         .filledColor(color)
                         .alternateFilledColor(COLOR_PROGRESS_BORDER)
                         .borderColor(COLOR_PROGRESS_BORDER)
-                        .width(150)
+                        .width(120)
                         .height(12))
                 .text(
                     fluid.getLocalizedName(),
