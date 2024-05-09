@@ -2,6 +2,7 @@ package gregtech.api.multitileentity.base;
 
 import static gregtech.GT_Mod.GT_FML_LOGGER;
 import static gregtech.api.enums.GT_Values.VALID_SIDES;
+import static gregtech.api.util.GT_Waila.COLOR_STANDARD_GROUP_BORDER;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -10,6 +11,9 @@ import java.util.UUID;
 
 import javax.annotation.Nonnull;
 
+import mcp.mobius.waila.api.ProbeMode;
+import mcp.mobius.waila.api.elements.IProbeInfo;
+import mcp.mobius.waila.api.impl.elements.LayoutStyle;
 import net.minecraft.block.Block;
 import net.minecraft.client.Minecraft;
 import net.minecraft.creativetab.CreativeTabs;
@@ -1117,6 +1121,13 @@ public abstract class MultiTileEntity extends CoverableTileEntity
     public void getWailaNBTData(EntityPlayerMP player, TileEntity tile, NBTTagCompound tag, World world, int x, int y,
         int z) {
         super.getWailaNBTData(player, tile, tag, world, x, y, z);
+    }
+
+    @Override
+    public void addProbeInfo(ProbeMode probeMode, ItemStack itemStack, IProbeInfo probeInfo,
+                             IWailaDataAccessor accessor, IWailaConfigHandler config) {
+        super.addProbeInfo(probeMode, itemStack, probeInfo, accessor, config);
+        probeInfo.horizontal(probeInfo.defaultLayoutStyle().borderColor(COLOR_STANDARD_GROUP_BORDER)).text(String.format("Facing: %s", getFrontFacing().name()));
     }
 
     @Override

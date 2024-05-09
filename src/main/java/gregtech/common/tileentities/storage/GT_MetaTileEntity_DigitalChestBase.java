@@ -3,11 +3,17 @@ package gregtech.common.tileentities.storage;
 import static gregtech.api.enums.Textures.BlockIcons.MACHINE_CASINGS;
 import static gregtech.api.enums.Textures.BlockIcons.OVERLAY_SCHEST;
 import static gregtech.api.enums.Textures.BlockIcons.OVERLAY_SCHEST_GLOW;
+import static gregtech.api.util.GT_Waila.COLOR_ITEMS_BORDER;
+import static gregtech.api.util.GT_Waila.COLOR_STANDARD_GROUP_BORDER;
 
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import mcp.mobius.waila.api.NumberFormat;
+import mcp.mobius.waila.api.ProbeMode;
+import mcp.mobius.waila.api.elements.IProbeInfo;
+import mcp.mobius.waila.api.impl.elements.ElementProgress;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.item.ItemStack;
@@ -510,13 +516,35 @@ public abstract class GT_MetaTileEntity_DigitalChestBase extends GT_MetaTileEnti
     public void getWailaNBTData(EntityPlayerMP player, TileEntity tile, NBTTagCompound tag, World world, int x, int y,
         int z) {
         super.getWailaNBTData(player, tile, tag, world, x, y, z);
-        ItemStack is = getItemStack();
-        if (GT_Utility.isStackInvalid(is)) return;
         int realItemCount = getItemCount();
+        ItemStack is = getItemStack();
         if (GT_Utility.isStackValid(mInventory[1]) && GT_Utility.areStacksEqual(mInventory[1], is))
             realItemCount += mInventory[1].stackSize;
+        if (realItemCount == 0) {
+            return;
+        }
         tag.setInteger("itemCount", realItemCount);
         tag.setTag("itemType", is.writeToNBT(new NBTTagCompound()));
+    }
+
+    @Override
+    public void addProbeInfo(ProbeMode probeMode, ItemStack itemStack, IProbeInfo probeInfo,
+                             IWailaDataAccessor accessor, IWailaConfigHandler config) {
+        super.addProbeInfo(probeMode, itemStack, probeInfo, accessor, config);
+        final NBTTagCompound tag = accessor.getNBTData();
+        if (tag.hasKey("itemType", Constants.NBT.TAG_COMPOUND)) {
+            ItemStack content = ItemStack.loadItemStackFromNBT(tag.getCompoundTag("itemType"));
+            int contentCount = tag.getInteger("itemCount");
+            if(content != null) {
+                content.stackSize = 1; //TODO: compressed stack size rendering cf:1,200 items -> 1.2k items
+                probeInfo
+                    .horizontal(probeInfo.defaultLayoutStyle().borderColor(COLOR_ITEMS_BORDER))
+                    .item(content, probeInfo.defaultItemStyle().height(12).width(12))
+                    .text(content.getDisplayName() + ": " + ElementProgress.format(contentCount, NumberFormat.COMPACT, ""), probeInfo.defaultTextStyle().vPadding(2).leftPadding(4));
+            }
+        } else {
+            probeInfo.text("Chest Empty");
+        }
     }
 
     @Override

@@ -9,6 +9,8 @@ import static mcp.mobius.waila.api.SpecialChars.RESET;
 
 import java.util.List;
 
+import mcp.mobius.waila.api.ProbeMode;
+import mcp.mobius.waila.api.elements.IProbeInfo;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.item.ItemStack;
@@ -321,5 +323,47 @@ public class GT_MetaTileEntity_Transformer extends GT_MetaTileEntity_TieredMachi
         tag.setLong("maxAmperesIn", maxAmperesIn());
         tag.setLong("maxEUOutput", maxEUOutput());
         tag.setLong("maxAmperesOut", maxAmperesOut());
+    }
+
+    @Override
+    public void addProbeInfo(ProbeMode probeMode, ItemStack itemStack, IProbeInfo probeInfo,
+                             IWailaDataAccessor accessor, IWailaConfigHandler config) {
+        final ForgeDirection facing = getBaseMetaTileEntity().getFrontFacing();
+        final NBTTagCompound tag = accessor.getNBTData();
+        final ForgeDirection side = accessor.getSide();
+        final boolean allowedToWork = tag.getBoolean("isAllowedToWork");
+
+        final byte inputTier = GT_Utility.getTier(tag.getLong("maxEUInput"));
+        final byte outputTier = GT_Utility.getTier(tag.getLong("maxEUOutput"));
+
+        probeInfo.text(
+            String.format(
+                "%s %s(%dA) -> %s(%dA)",
+                (allowedToWork ? (GREEN + "Step Down") : (RED + "Step Up")) + RESET,
+                GT_Mod.gregtechproxy.mWailaTransformerVoltageTier ? GT_Utility.getColoredTierNameFromTier(inputTier)
+                    : tag.getLong("maxEUInput"),
+                tag.getLong("maxAmperesIn"),
+                GT_Mod.gregtechproxy.mWailaTransformerVoltageTier ? GT_Utility.getColoredTierNameFromTier(outputTier)
+                    : tag.getLong("maxEUOutput"),
+                tag.getLong("maxAmperesOut")));
+
+        if ((side == facing && allowedToWork) || (side != facing && !allowedToWork)) {
+            probeInfo.text(
+                String.format(
+                    GOLD + "Input:" + RESET + " %s(%dA)",
+                    GT_Mod.gregtechproxy.mWailaTransformerVoltageTier ? GT_Utility.getColoredTierNameFromTier(inputTier)
+                        : tag.getLong("maxEUInput"),
+                    tag.getLong("maxAmperesIn")));
+        } else {
+            probeInfo.text(
+                String.format(
+                    BLUE + "Output:" + RESET + " %s(%dA)",
+                    GT_Mod.gregtechproxy.mWailaTransformerVoltageTier
+                        ? GT_Utility.getColoredTierNameFromTier(outputTier)
+                        : tag.getLong("maxEUOutput"),
+                    tag.getLong("maxAmperesOut")));
+        }
+
+        super.addProbeInfo(probeMode, itemStack, probeInfo, accessor, config);
     }
 }
