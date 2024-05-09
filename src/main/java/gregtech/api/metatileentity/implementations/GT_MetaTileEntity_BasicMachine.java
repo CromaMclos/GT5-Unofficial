@@ -1329,7 +1329,7 @@ public abstract class GT_MetaTileEntity_BasicMachine extends GT_MetaTileEntity_B
             }
             int progress = tag.getInteger("progressSingleBlock");
             int maxProgress = tag.getInteger("maxProgressSingleBlock");
-            if (maxProgress == 0) {
+            if (maxProgress <= 0) {
                 maxProgress = 1;
             }
             probeInfo.horizontal()

@@ -4,6 +4,8 @@ import static gregtech.api.enums.GT_Values.V;
 import static gregtech.api.enums.GT_Values.VN;
 import static gregtech.api.util.GT_Utility.filterValidMTEs;
 import static gregtech.api.util.GT_Utility.formatNumbers;
+import static gregtech.api.util.GT_Waila.COLOR_PROGRESS;
+import static gregtech.api.util.GT_Waila.COLOR_PROGRESS_BORDER;
 import static mcp.mobius.waila.api.SpecialChars.GREEN;
 import static mcp.mobius.waila.api.SpecialChars.RED;
 import static mcp.mobius.waila.api.SpecialChars.RESET;
@@ -60,6 +62,7 @@ import cpw.mods.fml.relauncher.SideOnly;
 import gregtech.GT_Mod;
 import gregtech.api.GregTech_API;
 import gregtech.api.enums.ConfigCategories;
+import gregtech.api.enums.Materials;
 import gregtech.api.enums.SoundResource;
 import gregtech.api.enums.VoidingMode;
 import gregtech.api.gui.modularui.GT_UIInfos;
@@ -109,6 +112,9 @@ import it.unimi.dsi.fastutil.objects.Object2ReferenceOpenHashMap;
 import it.unimi.dsi.fastutil.objects.Reference2ReferenceOpenHashMap;
 import mcp.mobius.waila.api.IWailaConfigHandler;
 import mcp.mobius.waila.api.IWailaDataAccessor;
+import mcp.mobius.waila.api.NumberFormat;
+import mcp.mobius.waila.api.ProbeMode;
+import mcp.mobius.waila.api.elements.IProbeInfo;
 
 public abstract class GT_MetaTileEntity_MultiBlockBase extends MetaTileEntity
     implements ControllerWithOptionalFeatures, IAddGregtechLogo, IAddUIWidgets, IBindPlayerInventoryUI {
@@ -1974,6 +1980,183 @@ public abstract class GT_MetaTileEntity_MultiBlockBase extends MetaTileEntity
         }
     }
 
+    public void addProbeInfo(ProbeMode probeMode, ItemStack itemStack, IProbeInfo probeInfo,
+        IWailaDataAccessor accessor, IWailaConfigHandler config) {
+        final NBTTagCompound tag = accessor.getNBTData();
+
+        if (tag.getBoolean("incompleteStructure")) {
+            probeInfo.text(RED + "** INCOMPLETE STRUCTURE **" + RESET);
+        }
+        boolean hasProblems = tag.getBoolean("hasProblems");
+        probeInfo.text(
+            (hasProblems ? (RED + "** HAS PROBLEMS **") : GREEN + "Running Fine") + RESET
+                + "  Efficiency: "
+                + tag.getFloat("efficiency")
+                + "%");
+
+        if (hasProblems) {
+            if (tag.getBoolean("wrench")) {
+                probeInfo.horizontal()
+                    .item(
+                        GT_MetaGenerated_Tool_01.INSTANCE
+                            .getToolWithStats(GT_MetaGenerated_Tool_01.WRENCH, 1, Materials.Iron, Materials.Iron, null),
+                        probeInfo.defaultItemStyle()
+                            .width(12)
+                            .height(12))
+                    .text(
+                        GT_Utility.getTrans("132"),
+                        probeInfo.defaultTextStyle()
+                            .vPadding(2));
+            }
+            if (tag.getBoolean("screwDriver")) {
+                probeInfo.horizontal()
+                    .item(
+                        GT_MetaGenerated_Tool_01.INSTANCE.getToolWithStats(
+                            GT_MetaGenerated_Tool_01.SCREWDRIVER,
+                            1,
+                            Materials.Iron,
+                            Materials.Iron,
+                            null),
+                        probeInfo.defaultItemStyle()
+                            .width(12)
+                            .height(12))
+                    .text(
+                        GT_Utility.getTrans("133"),
+                        probeInfo.defaultTextStyle()
+                            .vPadding(2));
+            }
+            if (tag.getBoolean("softHammer")) {
+                probeInfo.horizontal()
+                    .item(
+                        GT_MetaGenerated_Tool_01.INSTANCE.getToolWithStats(
+                            GT_MetaGenerated_Tool_01.SOFTMALLET,
+                            1,
+                            Materials.Iron,
+                            Materials.Iron,
+                            null),
+                        probeInfo.defaultItemStyle()
+                            .width(12)
+                            .height(12))
+                    .text(
+                        GT_Utility.getTrans("134"),
+                        probeInfo.defaultTextStyle()
+                            .vPadding(2));
+            }
+            if (tag.getBoolean("hardHammer")) {
+                probeInfo.horizontal()
+                    .item(
+                        GT_MetaGenerated_Tool_01.INSTANCE.getToolWithStats(
+                            GT_MetaGenerated_Tool_01.HARDHAMMER,
+                            1,
+                            Materials.Iron,
+                            Materials.Iron,
+                            null),
+                        probeInfo.defaultItemStyle()
+                            .width(12)
+                            .height(12))
+                    .text(
+                        GT_Utility.getTrans("135"),
+                        probeInfo.defaultTextStyle()
+                            .vPadding(2));
+            }
+            if (tag.getBoolean("solderingTool")) {
+                probeInfo.horizontal()
+                    .item(
+                        GT_MetaGenerated_Tool_01.INSTANCE.getToolWithStats(
+                            GT_MetaGenerated_Tool_01.SOLDERING_IRON_LV,
+                            1,
+                            Materials.Iron,
+                            Materials.Iron,
+                            null),
+                        probeInfo.defaultItemStyle()
+                            .width(12)
+                            .height(12))
+                    .text(
+                        GT_Utility.getTrans("136"),
+                        probeInfo.defaultTextStyle()
+                            .vPadding(2));
+            }
+            if (tag.getBoolean("crowbar")) {
+                probeInfo.horizontal()
+                    .item(
+                        GT_MetaGenerated_Tool_01.INSTANCE.getToolWithStats(
+                            GT_MetaGenerated_Tool_01.CROWBAR,
+                            1,
+                            Materials.Iron,
+                            Materials.Iron,
+                            null),
+                        probeInfo.defaultItemStyle()
+                            .width(12)
+                            .height(12))
+                    .text(
+                        GT_Utility.getTrans("137"),
+                        probeInfo.defaultTextStyle()
+                            .vPadding(2));
+            }
+        }
+
+        boolean isActive = tag.getBoolean("isActive");
+        if (isActive) {
+            long energyTier = tag.getLong("energyTier");
+            long actualEnergyUsage = tag.getLong("energyUsage");
+            if (energyTier > 0) {
+                if (actualEnergyUsage > 0) {
+                    probeInfo.text(
+                        StatCollector.translateToLocalFormatted(
+                            "GT5U.waila.energy.use_with_amperage",
+                            formatNumbers(actualEnergyUsage),
+                            GT_Utility.getAmperageForTier(actualEnergyUsage, (byte) energyTier),
+                            GT_Utility.getColoredTierNameFromTier((byte) energyTier)));
+                } else if (actualEnergyUsage < 0) {
+                    probeInfo.text(
+                        StatCollector.translateToLocalFormatted(
+                            "GT5U.waila.energy.produce_with_amperage",
+                            formatNumbers(-actualEnergyUsage),
+                            GT_Utility.getAmperageForTier(-actualEnergyUsage, (byte) energyTier),
+                            GT_Utility.getColoredTierNameFromTier((byte) energyTier)));
+                }
+            } else {
+                if (actualEnergyUsage > 0) {
+                    probeInfo.text(
+                        StatCollector.translateToLocalFormatted(
+                            "GT5U.waila.energy.use",
+                            formatNumbers(actualEnergyUsage),
+                            GT_Utility.getColoredTierNameFromVoltage(actualEnergyUsage)));
+                } else if (actualEnergyUsage < 0) {
+                    probeInfo.text(
+                        StatCollector.translateToLocalFormatted(
+                            "GT5U.waila.energy.produce",
+                            formatNumbers(-actualEnergyUsage),
+                            GT_Utility.getColoredTierNameFromVoltage(-actualEnergyUsage)));
+                }
+            }
+        }
+
+        if (!hasProblems) {
+            int progress = tag.getInteger("progress");
+            int maxProgress = tag.getInteger("maxProgress");
+            if (maxProgress <= 0) {
+                maxProgress = 1;
+            }
+            probeInfo.horizontal()
+                .progress(
+                    progress,
+                    maxProgress,
+                    probeInfo.defaultProgressStyle()
+                        .text(GT_Waila.getCompactMachineProgressString(isActive, maxProgress, progress))
+                        .filledColor(COLOR_PROGRESS)
+                        .alternateFilledColor(COLOR_PROGRESS)
+                        .borderColor(COLOR_PROGRESS_BORDER)
+                        .numberFormat(NumberFormat.COMMAS));
+        }
+        // Show ns on the tooltip
+        if (GT_Mod.gregtechproxy.wailaAverageNS && tag.hasKey("averageNS")) {
+            int tAverageTime = tag.getInteger("averageNS");
+            probeInfo.text("Average CPU load of ~" + formatNumbers(tAverageTime) + " ns");
+        }
+        super.addProbeInfo(probeMode, itemStack, probeInfo, accessor, config);
+    }
+
     protected void setMufflers(boolean state) {
         for (GT_MetaTileEntity_Hatch_Muffler aMuffler : mMufflerHatches) {
             final IGregTechTileEntity iGTTileEntity = aMuffler.getBaseMetaTileEntity();
@@ -1981,6 +2164,20 @@ public abstract class GT_MetaTileEntity_MultiBlockBase extends MetaTileEntity
                 iGTTileEntity.setActive(state);
             }
         }
+    }
+
+    @Override
+    public NBTTagCompound getNBTData(EntityPlayerMP player, TileEntity te, NBTTagCompound tag, World world, int x,
+        int y, int z) {
+        if ((getIdealStatus() - getRepairStatus()) > 0) {
+            tag.setBoolean("wrench", !mWrench);
+            tag.setBoolean("screwDriver", !mScrewdriver);
+            tag.setBoolean("softHammer", !mSoftHammer);
+            tag.setBoolean("hardHammer", !mHardHammer);
+            tag.setBoolean("solderingTool", !mSolderingTool);
+            tag.setBoolean("crowbar", !mCrowbar);
+        }
+        return super.getNBTData(player, te, tag, world, x, y, z);
     }
 
     @Override
