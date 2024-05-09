@@ -10,10 +10,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import mcp.mobius.waila.api.NumberFormat;
-import mcp.mobius.waila.api.ProbeMode;
-import mcp.mobius.waila.api.elements.IProbeInfo;
-import mcp.mobius.waila.api.impl.elements.ElementProgress;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.item.ItemStack;
@@ -53,6 +49,10 @@ import gregtech.api.util.GT_LanguageManager;
 import gregtech.api.util.GT_Utility;
 import mcp.mobius.waila.api.IWailaConfigHandler;
 import mcp.mobius.waila.api.IWailaDataAccessor;
+import mcp.mobius.waila.api.NumberFormat;
+import mcp.mobius.waila.api.ProbeMode;
+import mcp.mobius.waila.api.elements.IProbeInfo;
+import mcp.mobius.waila.api.impl.elements.ElementProgress;
 
 public abstract class GT_MetaTileEntity_DigitalChestBase extends GT_MetaTileEntity_TieredMachineBlock
     implements IMEMonitor<IAEItemStack>, IAddUIWidgets {
@@ -529,21 +529,27 @@ public abstract class GT_MetaTileEntity_DigitalChestBase extends GT_MetaTileEnti
 
     @Override
     public void addProbeInfo(ProbeMode probeMode, ItemStack itemStack, IProbeInfo probeInfo,
-                             IWailaDataAccessor accessor, IWailaConfigHandler config) {
+        IWailaDataAccessor accessor, IWailaConfigHandler config) {
         super.addProbeInfo(probeMode, itemStack, probeInfo, accessor, config);
         final NBTTagCompound tag = accessor.getNBTData();
         if (tag.hasKey("itemType", Constants.NBT.TAG_COMPOUND)) {
             ItemStack content = ItemStack.loadItemStackFromNBT(tag.getCompoundTag("itemType"));
             int contentCount = tag.getInteger("itemCount");
-            if(content != null) {
-                content.stackSize = 1; //TODO: compressed stack size rendering cf:1,200 items -> 1.2k items
-                probeInfo
-                    .horizontal()
-                    .item(content, probeInfo.defaultItemStyle().height(12).width(12))
-                    .progress(contentCount, getMaxItemCount(),
-                        probeInfo.defaultProgressStyle().text(
-                                content.getDisplayName() + ": " + ElementProgress.format(contentCount, NumberFormat.COMPACT, "")
-                            )
+            if (content != null) {
+                content.stackSize = 1; // TODO: compressed stack size rendering cf:1,200 items -> 1.2k items
+                probeInfo.horizontal()
+                    .item(
+                        content,
+                        probeInfo.defaultItemStyle()
+                            .height(12)
+                            .width(12))
+                    .progress(
+                        contentCount,
+                        getMaxItemCount(),
+                        probeInfo.defaultProgressStyle()
+                            .text(
+                                content.getDisplayName() + ": "
+                                    + ElementProgress.format(contentCount, NumberFormat.COMPACT, ""))
                             .height(12)
                             .filledColor(COLOR_PROGRESS)
                             .alternateFilledColor(COLOR_PROGRESS_BORDER)

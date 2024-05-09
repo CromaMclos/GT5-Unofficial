@@ -11,9 +11,6 @@ import java.util.UUID;
 
 import javax.annotation.Nonnull;
 
-import mcp.mobius.waila.api.ProbeMode;
-import mcp.mobius.waila.api.elements.IProbeInfo;
-import mcp.mobius.waila.api.impl.elements.LayoutStyle;
 import net.minecraft.block.Block;
 import net.minecraft.client.Minecraft;
 import net.minecraft.creativetab.CreativeTabs;
@@ -71,6 +68,8 @@ import gregtech.api.util.GT_Utility;
 import gregtech.common.render.MultiTileBasicRender;
 import mcp.mobius.waila.api.IWailaConfigHandler;
 import mcp.mobius.waila.api.IWailaDataAccessor;
+import mcp.mobius.waila.api.ProbeMode;
+import mcp.mobius.waila.api.elements.IProbeInfo;
 
 public abstract class MultiTileEntity extends CoverableTileEntity
     implements IMultiTileEntity.IMTE_BreakBlock, MultiTileBasicRender, SyncedMultiTileEntity {
@@ -1125,9 +1124,12 @@ public abstract class MultiTileEntity extends CoverableTileEntity
 
     @Override
     public void addProbeInfo(ProbeMode probeMode, ItemStack itemStack, IProbeInfo probeInfo,
-                             IWailaDataAccessor accessor, IWailaConfigHandler config) {
+        IWailaDataAccessor accessor, IWailaConfigHandler config) {
         super.addProbeInfo(probeMode, itemStack, probeInfo, accessor, config);
-        probeInfo.horizontal(probeInfo.defaultLayoutStyle().borderColor(COLOR_STANDARD_GROUP_BORDER)).text(String.format("Facing: %s", getFrontFacing().name()));
+        probeInfo.horizontal(
+            probeInfo.defaultLayoutStyle()
+                .borderColor(COLOR_STANDARD_GROUP_BORDER))
+            .text(String.format("Facing: %s", getFrontFacing().name()));
     }
 
     @Override

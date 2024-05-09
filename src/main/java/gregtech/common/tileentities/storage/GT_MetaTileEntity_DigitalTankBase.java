@@ -13,11 +13,6 @@ import java.util.List;
 
 import javax.annotation.Nonnull;
 
-import gregtech.api.enums.ItemList;
-import mcp.mobius.waila.api.NumberFormat;
-import mcp.mobius.waila.api.ProbeMode;
-import mcp.mobius.waila.api.elements.IProbeInfo;
-import mcp.mobius.waila.api.impl.elements.ElementProgress;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.EntityPlayerMP;
@@ -40,6 +35,7 @@ import com.gtnewhorizons.modularui.common.widget.FluidSlotWidget;
 import com.gtnewhorizons.modularui.common.widget.SlotWidget;
 import com.gtnewhorizons.modularui.common.widget.TextWidget;
 
+import gregtech.api.enums.ItemList;
 import gregtech.api.gui.modularui.GT_UIInfos;
 import gregtech.api.gui.modularui.GT_UITextures;
 import gregtech.api.interfaces.ITexture;
@@ -54,6 +50,10 @@ import gregtech.api.util.GT_Utility;
 import gregtech.common.gui.modularui.widget.FluidLockWidget;
 import mcp.mobius.waila.api.IWailaConfigHandler;
 import mcp.mobius.waila.api.IWailaDataAccessor;
+import mcp.mobius.waila.api.NumberFormat;
+import mcp.mobius.waila.api.ProbeMode;
+import mcp.mobius.waila.api.elements.IProbeInfo;
+import mcp.mobius.waila.api.impl.elements.ElementProgress;
 
 public abstract class GT_MetaTileEntity_DigitalTankBase extends GT_MetaTileEntity_BasicTank
     implements IFluidLockable, IAddUIWidgets, IAddGregtechLogo {
@@ -545,7 +545,7 @@ public abstract class GT_MetaTileEntity_DigitalTankBase extends GT_MetaTileEntit
 
     @Override
     public void addProbeInfo(ProbeMode probeMode, ItemStack itemStack, IProbeInfo probeInfo,
-                             IWailaDataAccessor accessor, IWailaConfigHandler config) {
+        IWailaDataAccessor accessor, IWailaConfigHandler config) {
         super.addProbeInfo(probeMode, itemStack, probeInfo, accessor, config);
 
         NBTTagCompound tag = accessor.getNBTData();
@@ -553,25 +553,38 @@ public abstract class GT_MetaTileEntity_DigitalTankBase extends GT_MetaTileEntit
         ItemStack fluidCell = FluidContainerRegistry.fillFluidContainer(fluid, ItemList.Cell_Empty.get(1L));
         if (fluid != null && fluid.amount >= 0) {
             int color = COLOR_PROGRESS;
-            if (fluid.getFluid().getIcon() instanceof TextureAtlasSprite) {
-                TextureAtlasSprite sprite = (TextureAtlasSprite) fluid.getFluid().getIcon();
-                color = sprite.getFrameTextureData(0)[0][sprite.getIconWidth() / 2 + sprite.getIconHeight() / 2 * sprite.getIconWidth()];
+            if (fluid.getFluid()
+                .getIcon() instanceof TextureAtlasSprite) {
+                TextureAtlasSprite sprite = (TextureAtlasSprite) fluid.getFluid()
+                    .getIcon();
+                color = sprite.getFrameTextureData(0)[0][sprite.getIconWidth() / 2
+                    + sprite.getIconHeight() / 2 * sprite.getIconWidth()];
             }
             IProbeInfo tank = probeInfo.horizontal();
-            if(fluidCell != null) {
-                tank.item(fluidCell, probeInfo.defaultItemStyle().width(24).height(24));
+            if (fluidCell != null) {
+                tank.item(
+                    fluidCell,
+                    probeInfo.defaultItemStyle()
+                        .width(24)
+                        .height(24));
             }
-            tank.vertical().progress(fluid.amount,
-                getRealCapacity(),
-                probeInfo.defaultProgressStyle().text(
-                        ElementProgress.format(fluid.amount, NumberFormat.COMPACT, "") + " / "
-                        + ElementProgress.format(getRealCapacity(), NumberFormat.COMPACT, " L "))
-                    .filledColor(color)
-                    .alternateFilledColor(COLOR_PROGRESS_BORDER)
-                    .borderColor(COLOR_PROGRESS_BORDER)
-                    .width(150).height(12)
-                )
-                .text(fluid.getLocalizedName(), probeInfo.defaultTextStyle().height(12));
+            tank.vertical()
+                .progress(
+                    fluid.amount,
+                    getRealCapacity(),
+                    probeInfo.defaultProgressStyle()
+                        .text(
+                            ElementProgress.format(fluid.amount, NumberFormat.COMPACT, "") + " / "
+                                + ElementProgress.format(getRealCapacity(), NumberFormat.COMPACT, " L "))
+                        .filledColor(color)
+                        .alternateFilledColor(COLOR_PROGRESS_BORDER)
+                        .borderColor(COLOR_PROGRESS_BORDER)
+                        .width(150)
+                        .height(12))
+                .text(
+                    fluid.getLocalizedName(),
+                    probeInfo.defaultTextStyle()
+                        .height(12));
         } else {
             probeInfo.text("Tank Empty");
         }
